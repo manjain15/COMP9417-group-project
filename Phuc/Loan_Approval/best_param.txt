@@ -1,0 +1,1 @@
+{'model': {'kernel': 'lpq_kermac', 'bandwidth': np.float64(8.329253178564588), 'exponent': np.float64(1.2419210617329313), 'norm_p': 1.5520269069374861, 'diag': False, 'bandwidth_mode': 'constant'}, 'fit': {'reg': np.float64(0.002799976603973412), 'M_batch_size': 1000, 'iters': 5, 'early_stop_rfm': True, 'verbose': False}}
