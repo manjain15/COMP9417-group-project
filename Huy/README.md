@@ -14,13 +14,13 @@ This folder contains the preprocessing, modeling, and scalability stress testing
 * `retail_stress_test.png` - Computational plot showing Training Time vs. Sample Size.
 
 ## Methodology Summary
-1. **Preprocessing:** Median imputation for numerical features, most-frequent imputation and ordinal encoding for categorical features. Standard scaling applied.
-2. **Models Trained:** xRFM, XGBoost, and MLP.
-3. **Evaluation Metrics:** RMSE (Root Mean Squared Error) and Training Time (Seconds).
+1. **Preprocessing:** Median imputation for numerical features, mode imputation and ordinal encoding for categorical features. Standard scaling applied.
+2. **Models:** xRFM, XGBoost, and MLP.
+3. **Evaluation Metrics:** RMSE and Training Time (Seconds).
 
 ## How to Run
 1. Ensure the required packages are installed (`pandas`, `numpy`, `scikit-learn`, `xgboost`, `matplotlib`, and `xRFM`).
 2. Open `retail.ipynb` in Jupyter Notebook or Jupyter Lab.
 3. Run all cells sequentially to reproduce the data cleaning, the $n=1000$ to $n=9576$ scalability stress test, and regenerate the final plots.
 
-*(Note: xRFM training will take approximately 24 seconds on the full $n=9576$ sample size due to dense $O(n^3)$ kernel operations. XGBoost and MLP will train almost instantly).*
+*(Note: xRFM training will take approximately 20-24 seconds on the full $n=9576$ sample size due to $O(n^3)$ kernel operations. XGBoost and MLP will train almost instantly).*
