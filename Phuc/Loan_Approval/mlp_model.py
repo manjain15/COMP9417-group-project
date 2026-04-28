@@ -4,7 +4,6 @@ from sklearn.model_selection import StratifiedKFold, RandomizedSearchCV
 import joblib
 import numpy as np
 import time
-import torch
 
 df_train = pd.read_csv("train.csv")
 X_train, y_train = df_train.iloc[:, :-1], df_train.iloc[:, -1]
@@ -26,7 +25,7 @@ param_grid = {
     "activation": ["relu", "tanh"],
     "solver": ["sgd", "adam"],
     "alpha": np.linspace(0.001, 2, 10),
-    "batch_size": np.arange(200, 600, 50),
+    "batch_size": np.arange(200, 600, 10),
     "learning_rate": ["constant", "adaptive"],
     "learning_rate_init": np.linspace(0.001, 1, 10)
 }
@@ -35,7 +34,7 @@ search = RandomizedSearchCV(
     estimator=model,
     param_distributions=param_grid,
     cv=cv,
-    n_iter=100,
+    n_iter=200,
     scoring="accuracy",
     verbose=True,
     n_jobs=2

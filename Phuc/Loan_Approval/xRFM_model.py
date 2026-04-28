@@ -4,9 +4,12 @@ import torch
 import joblib
 import numpy as np
 import time
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
+from sklearn.model_selection import StratifiedKFold, RandomizedSearchCV
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.model_selection import train_test_split
+from itertools import product
+
+SEED = 42
 
 def loguniform(low, high, size):
     log_low = np.log10(low)
@@ -18,16 +21,17 @@ def loguniform(low, high, size):
     
     return samples
 
+# Generate rfm_params distribution
 def generate_rfm_params(size):
     bandwidths = loguniform(1, 200, size)
-    bandwidth_modes = ["constant"]
+    bandwidth_modes = ["constant", "adaptive"]
     diagonals = [False, True]
     exponents = np.random.uniform(0.7, 1.4, size=size)  
     regularisations = loguniform(1e-6, 1, size=size)
     
     rfm_params_list = []
     
-    for bandwidth, mode, diag, exp, reg in zip(bandwidths, bandwidth_modes, diagonals, exponents, regularisations):
+    for bandwidth, mode, diag, exp, reg in list(product(bandwidths, bandwidth_modes, diagonals, exponents, regularisations)):
         kernel = None
         p = np.random.uniform(0, 1)
         norm_p = None
@@ -51,7 +55,8 @@ def generate_rfm_params(size):
                     "reg": reg,
                     "iters": 1,
                     "early_stop_rfm": True,
-                    "verbose": False
+                    "M_batch_size": 500,
+                    "verbose": True
                 }
             }
         )
@@ -61,7 +66,7 @@ class xRFMWrapper(BaseEstimator, ClassifierMixin):
     def __init__(self, device, rfm_params=None):
         self.rfm_params = rfm_params
         self.device = device
-        self.random_state = 48
+        self.random_state = SEED
         self.model = None
         
     def fit(self, X, y):
@@ -70,7 +75,7 @@ class xRFMWrapper(BaseEstimator, ClassifierMixin):
         )
         self.model = xRFM(
             rfm_params=self.rfm_params,
-            random_state=48,
+            random_state=self.random_state,
             device=device,
             tuning_metric="accuracy",
             split_method='top_vector_agop_on_subset',
@@ -102,16 +107,16 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = xRFMWrapper(device)
 cv = StratifiedKFold(n_splits=5)
 param_grid = {
-    "rfm_params": generate_rfm_params(3)
+    "rfm_params": generate_rfm_params(10)
 }
 
-search = GridSearchCV(
+search = RandomizedSearchCV(
     estimator=model,
-    param_grid=param_grid,
+    param_distributions=param_grid,
     cv=cv,
     scoring="accuracy",
     verbose=True,
-    n_jobs=1
+    n_iter=5
 )
 search.fit(X_val, y_val)
 # End of tuning
@@ -121,7 +126,7 @@ print(rfm_params)
 
 model = xRFM(
     rfm_params=rfm_params,
-    random_state=48,
+    random_state=SEED,
     device=device,
     tuning_metric="accuracy",
     split_method='top_vector_agop_on_subset',

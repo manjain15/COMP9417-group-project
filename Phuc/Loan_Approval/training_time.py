@@ -109,7 +109,7 @@ for size in sizes:
     model_performance(size, "mlp", training_time, perf, X_train_s, y_train_s, X_test_s, y_test_s)
     
     
-fig, axes = plt.subplots(1, 2, figsize=(10,8))
+fig, axes = plt.subplots(1, 2, figsize=(20, 10))
 
 def plot_axes(ax, X, y, fmt, label):
     ax.plot(X, y, fmt, label=label)

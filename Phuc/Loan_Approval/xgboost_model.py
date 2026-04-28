@@ -1,10 +1,11 @@
 import pandas as pd
 from xgboost import XGBClassifier
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
+from sklearn.model_selection import StratifiedKFold, RandomizedSearchCV
 import joblib
 import numpy as np
 import time
 
+SEED = 42
 df_train = pd.read_csv("train.csv")
 X_train, y_train = df_train.iloc[:, :-1], df_train.iloc[:, -1:]
 
@@ -19,22 +20,25 @@ y_val = y_val.to_numpy().astype(np.float32)
 cv = StratifiedKFold(n_splits=5)
 
 model = XGBClassifier(
-    objective="binary:logistic"
+    random_state=SEED,
+    objective="binary:logistic",
 )
 
 param_grid = {
-    "max_depth": np.arange(2, 7, 1),
-    "learning_rate": np.linspace(0.01, 1, 20),
-    "n_estimators": [5, 100, 20]
+    "max_depth": np.arange(2, 15, 1),
+    "learning_rate": np.linspace(0.01, 2, 50),
+    "n_estimators": [5, 100, 50]
 }
-search = GridSearchCV(
-    estimator=model, param_grid=param_grid, scoring="accuracy", cv=cv, verbose=True
+
+search = RandomizedSearchCV(
+    estimator=model, param_distributions=param_grid, scoring="accuracy", n_iter=200, cv=cv, verbose=True
 )
 
 search.fit(X_val, y_val)
 
 final_model = XGBClassifier(
     **search.best_params_,
+    random_state=SEED,
     objective="binary:logistic"
 )
 

@@ -19,9 +19,6 @@ warnings.filterwarnings('ignore')
 import os
 import sys
 from contextlib import redirect_stdout
-# import os
-# # Create a folder where you have lots of space and point to it
-# os.environ['JOBLIB_TEMP_FOLDER'] = 'D:/temp_joblib'
 
 df_test = pd.read_csv("test.csv")
 X_test, y_test = df_test.iloc[:, :-1], df_test.iloc[:, -1:]
@@ -61,7 +58,7 @@ for name, metadata in best_models.items():
     
     result["Models"].append(name)
     result["Accuracy"].append(accuracy_score(y_test_np, y_pred))
-    result["Inference Time"].append(end - start)
+    result["Inference Time"].append((end - start) / X_test.shape[0])
     result["Training Time"].append(training_t)
     result["ROC-AUC"].append(auc_score)
     
@@ -104,7 +101,7 @@ def display_matrix(ax, matrix, color, leaf_count, tree_count):
         cmap=color,
         linewidths=0.5,
         ax=ax,
-        alpha=0.3,
+        alpha=0.8,
         linecolor="grey"
     )
     ax.set_title(f"AGOP of xRFM Leaf {leaf_count}, Tree {tree_count}")
@@ -177,10 +174,11 @@ mlp_important = get_permutation_importance(mlp, "MLP", X_test, y_test)
 comparision_df = pd.concat([mi_series, loadings_df, xgb_important, rfm_important, mlp_important], axis=1)
 display_comparision_df = pd.concat([mi_series, loadings_df["PC1"], xgb_important, rfm_important, mlp_important], axis=1)
 
-display_comparision_df.sort_values(by="MI score", ascending=False)
+display_comparision_df = display_comparision_df.sort_values(by="PI_XGBoost", ascending=False)
 
 print(display_comparision_df)
 
+comparision_df = comparision_df.sort_values(by="PI_XGBoost", ascending=False)
 comparision_df.to_csv("feature_importance.csv", index=True)
 
 # Plot the feature importance of the xGBoost
